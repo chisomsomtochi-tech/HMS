@@ -1,0 +1,111 @@
+{% extends "base_print.html" %}
+
+{% block title %}Prescription · {{ patient.full_name }}{% endblock %}
+{% block back_url %}{% url 'encounters:detail' encounter.pk %}{% endblock %}
+
+{% block content %}
+<header class="flex flex-col gap-4 border-b-2 border-slate-900 pb-5 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-xl font-semibold tracking-tight text-slate-900">{{ CLINIC_NAME }}</p>
+    <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ CLINIC_TAGLINE }}</p>
+    <p class="mt-2 text-xs leading-5 text-slate-600">
+      {{ CLINIC_ADDRESS }}{% if CLINIC_ADDRESS %}<br>{% endif %}
+      {{ CLINIC_PHONE }}{% if CLINIC_PHONE %} · {% endif %}{{ CLINIC_EMAIL }}
+    </p>
+  </div>
+  <div class="sm:text-right">
+    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Optical prescription</p>
+    <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Glasses Rx</h1>
+    <p class="mt-1 text-xs text-slate-500">{{ prescription.issued_at|default:encounter.encounter_date|date:"j F Y" }}</p>
+  </div>
+</header>
+
+<section class="mt-5 rounded-lg border border-slate-300 p-4 print-avoid-break">
+  <div class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Patient</p>
+      <p class="mt-0.5 font-semibold text-slate-900">{{ patient.full_name }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Medical record no.</p>
+      <p class="mt-0.5 font-medium text-slate-900">{{ patient.mrn }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Age / sex</p>
+      <p class="mt-0.5 text-slate-800">{{ patient.age_display }} · {{ patient.get_sex_display }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Prescriber</p>
+      <p class="mt-0.5 text-slate-800">{{ prescription.issued_by.display_name|default:encounter.clinician.display_name }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="mt-8">
+  <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Refraction</h2>
+  <div class="mt-3 overflow-hidden rounded-lg border border-slate-400">
+    <table class="w-full border-collapse text-center text-sm">
+      <thead>
+        <tr class="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600">
+          <th class="border-b border-r border-slate-300 px-3 py-2.5 text-left font-semibold">Eye</th>
+          <th class="border-b border-r border-slate-300 px-3 py-2.5 font-semibold">Sphere (SPH)</th>
+          <th class="border-b border-r border-slate-300 px-3 py-2.5 font-semibold">Cylinder (CYL)</th>
+          <th class="border-b border-r border-slate-300 px-3 py-2.5 font-semibold">Axis</th>
+          <th class="border-b border-slate-300 px-3 py-2.5 font-semibold">Add</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" class="border-b border-r border-slate-300 bg-slate-50 px-3 py-3 text-left text-sm font-semibold text-slate-700">OD <span class="block text-[10px] font-normal text-slate-400">Right eye</span></th>
+          <td class="border-b border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.sph_od|default_if_none:"—" }}</td>
+          <td class="border-b border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.cyl_od|default_if_none:"—" }}</td>
+          <td class="border-b border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.axis_od|default_if_none:"—" }}</td>
+          <td class="border-b border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.add_od|default_if_none:"—" }}</td>
+        </tr>
+        <tr>
+          <th scope="row" class="border-r border-slate-300 bg-slate-50 px-3 py-3 text-left text-sm font-semibold text-slate-700">OS <span class="block text-[10px] font-normal text-slate-400">Left eye</span></th>
+          <td class="border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.sph_os|default_if_none:"—" }}</td>
+          <td class="border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.cyl_os|default_if_none:"—" }}</td>
+          <td class="border-r border-slate-300 px-3 py-3 text-base font-medium text-slate-900">{{ prescription.axis_os|default_if_none:"—" }}</td>
+          <td class="px-3 py-3 text-base font-medium text-slate-900">{{ prescription.add_os|default_if_none:"—" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-3 flex flex-wrap gap-x-10 gap-y-2 text-sm text-slate-700">
+    <span><span class="text-slate-500">Pupillary distance:</span> <span class="font-medium text-slate-900">{{ prescription.pd|default_if_none:"—" }}{% if prescription.pd %} mm{% endif %}</span></span>
+    <span><span class="text-slate-500">Lens type:</span> <span class="font-medium text-slate-900">{{ prescription.get_lens_type_display|default:"Not specified" }}</span></span>
+  </div>
+</section>
+
+{% if prescription.notes %}
+  <section class="mt-6 print-avoid-break">
+    <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Notes</h2>
+    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-800">{{ prescription.notes }}</p>
+  </section>
+{% endif %}
+
+<section class="mt-6 rounded-lg bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600 print-avoid-break">
+  <p><span class="font-semibold text-slate-800">Dispensing note:</span> This prescription is issued for the named patient following an eye examination on {{ encounter.encounter_date|date:"j F Y" }}. Please confirm pupillary distance and lens type with the patient before ordering.</p>
+</section>
+
+<section class="mt-12 grid grid-cols-2 gap-10 print-avoid-break">
+  <div>
+    <div class="border-t border-slate-400 pt-2 text-xs text-slate-600">
+      <p class="font-semibold text-slate-900">{{ prescription.issued_by.display_name|default:encounter.clinician.display_name }}</p>
+      <p>{{ prescription.issued_by.role_label|default:encounter.clinician.role_label }}</p>
+      {% if prescription.issued_at %}<p class="mt-1">{{ prescription.issued_at|date:"j F Y" }}</p>{% endif %}
+    </div>
+  </div>
+  <div>
+    <div class="border-t border-slate-400 pt-2 text-xs text-slate-600">
+      <p class="font-semibold text-slate-900">Signature &amp; clinic stamp</p>
+      <p class="mt-6">________________________________</p>
+    </div>
+  </div>
+</section>
+
+<footer class="mt-8 border-t border-slate-200 pt-3 text-[10px] leading-4 text-slate-400">
+  <p>Prescription for {{ patient.full_name }} · {{ patient.mrn }} · Issued by {{ CLINIC_NAME }}. Keep this document for your optical appointment.</p>
+</footer>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}New encounter · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}New encounter{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <div class="mb-6">
+    <a href="{% url 'encounters:list' %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+      </svg>
+      Back to encounters
+    </a>
+    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-slate-900">Start a clinical encounter</h2>
+    <p class="mt-1 text-sm text-slate-500">
+      {% if patient %}Confirm the attending clinician to open the examination record.{% else %}Find the patient to begin a walk-in or ad-hoc examination.{% endif %}
+    </p>
+  </div>
+
+  {% if not patient %}
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Find the patient</h3>
+          <p class="mt-0.5 text-xs text-slate-500">Search by name, MRN, or phone number.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="relative">
+          <label for="encounter-patient-picker" class="sr-only">Search for a patient</label>
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+            </svg>
+          </div>
+          <input
+            id="encounter-patient-picker"
+            type="search"
+            name="q"
+            autocomplete="off"
+            autofocus
+            placeholder="Start typing a patient name or MRN…"
+            class="h-11 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+            hx-get="{% url 'patients:search' %}?mode=encounter"
+            hx-trigger="input changed delay:250ms, search"
+            hx-target="#encounter-patient-results"
+            hx-swap="innerHTML"
+          >
+        </div>
+        <div id="encounter-patient-results" class="mt-3"></div>
+        <p class="mt-5 text-xs text-slate-500">
+          Patient not registered yet? <a href="{% url 'patients:create' %}" class="font-semibold text-brand-700 hover:text-brand-800">Register a new patient</a> first.
+        </p>
+      </div>
+    </div>
+  {% else %}
+    {% include "partials/_patient_banner.html" %}
+
+    <form method="post" class="card mt-6" novalidate>
+      {% csrf_token %}
+      <div class="card-body space-y-5">
+        <div class="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+          <p class="font-medium">This opens a draft encounter.</p>
+          <p class="mt-1 text-sky-800">Triage and examination can be recorded in stages. The record stays editable until it is completed.</p>
+        </div>
+        {% if form.non_field_errors %}
+          <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        {{ form.patient }}
+        {% include "partials/_field.html" with field=form.clinician %}
+      </div>
+      <div class="card-footer flex items-center justify-between">
+        <a href="{% url 'patients:detail' patient.pk %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Open encounter</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

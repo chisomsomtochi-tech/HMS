@@ -1,0 +1,23 @@
+{% if messages %}
+  <div class="fixed right-4 top-20 z-50 w-[calc(100%-2rem)] max-w-sm space-y-2" data-toasts aria-live="polite">
+    {% for message in messages %}
+      <div data-toast class="flex items-start gap-3 rounded-xl border p-3.5 shadow-lg shadow-slate-900/5 {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-900{% elif message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-900{% elif message.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-900{% else %}border-sky-200 bg-sky-50 text-sky-900{% endif %}">
+        <svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          {% if message.tags == 'success' %}
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          {% elif message.tags == 'error' %}
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          {% else %}
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.02M12 8.25h.008v.008H12V8.25ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          {% endif %}
+        </svg>
+        <p class="flex-1 text-sm font-medium leading-5">{{ message }}</p>
+        <button type="button" class="-mr-1 rounded p-0.5 opacity-60 transition hover:opacity-100" data-toast-close aria-label="Dismiss">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

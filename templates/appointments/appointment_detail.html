@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load cms %}
+
+{% block title %}Appointment · {{ patient.full_name }} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Appointment{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <a href="{% url 'appointments:list' %}?date={{ appointment.scheduled_at|date:'Y-m-d' }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+    </svg>
+    Back to schedule
+  </a>
+  <div class="flex flex-wrap gap-2">
+    {% if encounter %}
+      <a href="{% url 'encounters:detail' encounter.pk %}" class="btn btn-secondary">Open encounter</a>
+    {% elif can_start_encounter %}
+      <form method="post" action="{% url 'appointments:start_encounter' appointment.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Start encounter</button>
+      </form>
+    {% endif %}
+    {% if can_edit %}
+      <a href="{% url 'appointments:edit' appointment.pk %}" class="btn btn-secondary">Reschedule</a>
+    {% endif %}
+  </div>
+</div>
+
+{% include "partials/_patient_banner.html" %}
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="flex items-center gap-3">
+          <h3 class="text-base font-semibold text-slate-900">Visit details</h3>
+          {% include "partials/_status_badge.html" with status=appointment.status label=appointment.get_status_display %}
+        </div>
+        {% if can_check_in %}
+          <form method="post" action="{% url 'appointments:check_in' appointment.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Check in patient</button>
+          </form>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <dl class="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Date</dt>
+            <dd class="mt-1 text-sm font-medium text-slate-900">{{ appointment.scheduled_at|date:"l, j F Y" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Time</dt>
+            <dd class="mt-1 text-sm font-medium text-slate-900">{{ appointment.scheduled_at|time:"H:i" }}–{{ appointment.ends_at|time:"H:i" }} <span class="font-normal text-slate-400">({{ appointment.duration_minutes }} min)</span></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Clinician</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ appointment.clinician.display_name }} <span class="text-slate-400">· {{ appointment.clinician.role_label }}</span></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Visit type</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ appointment.get_appointment_type_display }}</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Reason for visit</dt>
+            <dd class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-700">{{ appointment.reason|default:"No reason recorded." }}</dd>
+          </div>
+          {% if appointment.notes %}
+            <div class="sm:col-span-2">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Notes</dt>
+              <dd class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-700">{{ appointment.notes }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      </div>
+      {% if appointment.checked_in_at %}
+        <div class="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">Checked in {{ appointment.checked_in_at|date:"j M Y" }} at {{ appointment.checked_in_at|time:"H:i" }}</div>
+      {% endif %}
+      {% if appointment.cancelled_reason %}
+        <div class="border-t border-rose-100 bg-rose-50 px-6 py-3 text-xs text-rose-800"><span class="font-semibold">Cancellation reason:</span> {{ appointment.cancelled_reason }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Visit workflow</h3>
+      </div>
+      <div class="card-body">
+        <ol class="space-y-4">
+          <li class="flex gap-3">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700">1</span>
+            <div>
+              <p class="text-sm font-medium text-slate-900">Booked</p>
+              <p class="text-xs text-slate-500">Scheduled by reception for {{ appointment.scheduled_at|date:"j M, H:i" }}.</p>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full {% if appointment.status != 'scheduled' and appointment.status != 'cancelled' and appointment.status != 'no_show' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-400{% endif %} text-[11px] font-bold">2</span>
+            <div>
+              <p class="text-sm font-medium text-slate-900">Checked in</p>
+              <p class="text-xs text-slate-500">{% if appointment.checked_in_at %}Arrived {{ appointment.checked_in_at|date:"j M, H:i" }}.{% else %}Waiting for the patient to arrive.{% endif %}</p>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full {% if encounter %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-400{% endif %} text-[11px] font-bold">3</span>
+            <div>
+              <p class="text-sm font-medium text-slate-900">Clinical encounter</p>
+              {% if encounter %}
+                <p class="text-xs text-slate-500">
+                  {% if encounter.is_completed %}Completed by {{ encounter.completed_by.display_name|default:encounter.clinician.display_name }}.{% else %}In progress with {{ encounter.clinician.display_name }}.{% endif %}
+                  <a href="{% url 'encounters:detail' encounter.pk %}" class="font-semibold text-brand-700 hover:text-brand-800">Open record →</a>
+                </p>
+              {% else %}
+                <p class="text-xs text-slate-500">No encounter opened yet.</p>
+              {% endif %}
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full {% if appointment.status == 'completed' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-400{% endif %} text-[11px] font-bold">4</span>
+            <div>
+              <p class="text-sm font-medium text-slate-900">Visit completed</p>
+              <p class="text-xs text-slate-500">{% if appointment.status == 'completed' %}Consultation closed.{% else %}Closes when the encounter is completed.{% endif %}</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Patient</h3>
+      </div>
+      <div class="card-body space-y-3 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">MRN</span>
+          <span class="font-medium text-slate-900">{{ patient.mrn }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Age</span>
+          <span class="font-medium text-slate-900">{{ patient.age_display }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Sex</span>
+          <span class="font-medium text-slate-900">{{ patient.get_sex_display }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Phone</span>
+          <span class="font-medium text-slate-900">{{ patient.phone|default:"—" }}</span>
+        </div>
+        <a href="{% url 'patients:detail' patient.pk %}" class="btn btn-secondary btn-block mt-2">Open patient record</a>
+      </div>
+    </div>
+
+    {% if can_cancel or can_mark_no_show %}
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-base font-semibold text-slate-900">Manage visit</h3>
+        </div>
+        <div class="card-body space-y-4">
+          {% if can_mark_no_show %}
+            <form method="post" action="{% url 'appointments:no_show' appointment.pk %}" onsubmit="return confirm('Mark this appointment as a no-show?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary btn-block">Mark as no-show</button>
+            </form>
+          {% endif %}
+          {% if can_cancel %}
+            <form method="post" action="{% url 'appointments:cancel' appointment.pk %}" onsubmit="return confirm('Cancel this appointment? The slot will be released.');" class="space-y-2 border-t border-slate-100 pt-4">
+              {% csrf_token %}
+              <label for="cancelled_reason" class="block text-xs font-medium text-slate-600">Cancellation reason (optional)</label>
+              <input id="cancelled_reason" type="text" name="cancelled_reason" maxlength="255" placeholder="e.g. Patient called to reschedule" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
+              <button type="submit" class="btn btn-danger btn-block">Cancel appointment</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if encounter and user|can:"view_clinical" %}
+      <div class="rounded-2xl border border-brand-100 bg-brand-50/60 p-5">
+        <h3 class="text-sm font-semibold text-brand-900">Clinical record</h3>
+        <p class="mt-1 text-xs text-brand-800/80">The examination record for this visit is available, including any prescription.</p>
+        <div class="mt-4 flex flex-col gap-2">
+          <a href="{% url 'encounters:detail' encounter.pk %}" class="btn btn-primary btn-sm">Open encounter</a>
+          {% if encounter.is_completed %}
+            <a href="{% url 'encounters:print' encounter.pk %}" class="btn btn-secondary btn-sm">Print summary</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

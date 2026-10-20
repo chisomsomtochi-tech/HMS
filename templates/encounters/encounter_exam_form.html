@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Eye examination · {{ patient.full_name }} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Eye examination{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl">
+  <div class="mb-5">
+    <a href="{% url 'encounters:detail' encounter.pk %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+      </svg>
+      Back to encounter
+    </a>
+  </div>
+
+  {% include "partials/_patient_banner.html" %}
+
+  <div class="mt-5 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+    <svg class="mt-0.5 h-5 w-5 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+    </svg>
+    <p>Save as a draft at any point. <span class="font-semibold">Save &amp; complete</span> locks the examination and requires a clinical impression.</p>
+  </div>
+
+  <form method="post" class="mt-6 space-y-6" novalidate>
+    {% csrf_token %}
+
+    {% if exam_form.non_field_errors or assessment_form.non_field_errors or rx_form.non_field_errors %}
+      <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+        {% for error in exam_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        {% for error in assessment_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        {% for error in rx_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Visual acuity</h3>
+          <p class="mt-0.5 text-xs text-slate-500">Record as 6/6, 6/12, CF, HM, PL. Leave blank if not tested.</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="w-1/3">Test</th>
+              <th>Right eye (OD)</th>
+              <th>Left eye (OS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">Distance — unaided</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_distance_od_unaided %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_distance_os_unaided %}</td>
+            </tr>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">Distance — corrected</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_distance_od_corrected %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_distance_os_corrected %}</td>
+            </tr>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">Near vision</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_near_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.va_near_os %}</td>
+            </tr>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">Pinhole</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.pinhole_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.pinhole_os %}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Refraction</h3>
+          <p class="mt-0.5 text-xs text-slate-500">Use minus cylinder notation. Axis in degrees (0–180).</p>
+        </div>
+        <button type="button" data-copy-refraction class="btn btn-secondary btn-sm">Copy to prescription</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Eye</th>
+              <th>Sphere (SPH)</th>
+              <th>Cylinder (CYL)</th>
+              <th>Axis (°)</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">OD</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.sph_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.cyl_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.axis_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.add_od %}</td>
+            </tr>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">OS</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.sph_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.cyl_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.axis_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=exam_form.add_os %}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Intraocular pressure</h3>
+      </div>
+      <div class="card-body">
+        <div class="grid gap-5 sm:grid-cols-3">
+          {% include "partials/_field.html" with field=exam_form.iop_od %}
+          {% include "partials/_field.html" with field=exam_form.iop_os %}
+          {% include "partials/_field.html" with field=exam_form.iop_method %}
+        </div>
+        <div class="mt-5 max-w-xs">
+          {% include "partials/_field.html" with field=exam_form.pd %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Slit lamp &amp; fundus</h3>
+      </div>
+      <div class="card-body space-y-6">
+        <div>
+          <h4 class="section-title">Anterior segment</h4>
+          <div class="mt-3 grid gap-5 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=exam_form.anterior_segment_od %}
+            {% include "partials/_field.html" with field=exam_form.anterior_segment_os %}
+          </div>
+        </div>
+        <div>
+          <h4 class="section-title">Fundus</h4>
+          <div class="mt-3 grid gap-5 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=exam_form.fundus_od %}
+            {% include "partials/_field.html" with field=exam_form.fundus_os %}
+          </div>
+        </div>
+        {% include "partials/_field.html" with field=exam_form.exam_notes %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Assessment &amp; plan</h3>
+          <p class="mt-0.5 text-xs text-slate-500">A clinical impression is required before the encounter can be completed.</p>
+        </div>
+      </div>
+      <div class="card-body space-y-5">
+        {% include "partials/_field.html" with field=assessment_form.impression %}
+        {% include "partials/_field.html" with field=assessment_form.plan %}
+        <div class="max-w-xs">
+          {% include "partials/_field.html" with field=assessment_form.follow_up_date %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Glasses prescription <span class="font-normal text-slate-400">(optional)</span></h3>
+          <p class="mt-0.5 text-xs text-slate-500">Leave blank if no prescription is being issued. Copying refraction fills the values above.</p>
+        </div>
+        <button type="button" data-copy-refraction class="btn btn-secondary btn-sm">Copy refraction</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Eye</th>
+              <th>Sphere (SPH)</th>
+              <th>Cylinder (CYL)</th>
+              <th>Axis (°)</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">OD</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.sph_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.cyl_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.axis_od %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.add_od %}</td>
+            </tr>
+            <tr>
+              <th scope="row" class="!bg-white !text-slate-600">OS</th>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.sph_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.cyl_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.axis_os %}</td>
+              <td class="cell-input">{% include "partials/_field_cell.html" with field=rx_form.add_os %}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-body space-y-5">
+        <p id="copy-rx-status" class="hidden text-xs font-medium text-emerald-700" role="status"></p>
+        <div class="grid gap-5 sm:grid-cols-3">
+          {% include "partials/_field.html" with field=rx_form.pd %}
+          {% include "partials/_field.html" with field=rx_form.lens_type %}
+        </div>
+        {% include "partials/_field.html" with field=rx_form.notes %}
+      </div>
+    </div>
+
+    <div class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+      <a href="{% url 'encounters:detail' encounter.pk %}" class="btn btn-ghost">Cancel</a>
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <button type="submit" name="action" value="save" class="btn btn-secondary">Save draft</button>
+        <button type="submit" name="action" value="complete" class="btn btn-primary" onclick="return confirm('Save and complete this encounter? It will be locked for editing unless an administrator reopens it.');">Save &amp; complete</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

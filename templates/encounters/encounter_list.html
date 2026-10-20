@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Encounters · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Encounters{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Clinical encounters</h2>
+    <p class="mt-1 text-sm text-slate-500">Eye examinations, triage records, and issued prescriptions.</p>
+  </div>
+  {% if can_start_encounter %}
+    <a href="{% url 'encounters:create' %}" class="btn btn-primary">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New encounter
+    </a>
+  {% endif %}
+</div>
+
+<div class="mb-5 flex flex-wrap items-center gap-2">
+  <a href="{% url 'encounters:list' %}" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition {% if not selected_status %}bg-slate-900 text-white{% else %}bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50{% endif %}">
+    All encounters
+  </a>
+  <a href="?status=draft" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition {% if selected_status == 'draft' %}bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-200{% else %}bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50{% endif %}">
+    Drafts
+    <span class="rounded-full bg-white/80 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">{{ counts.draft }}</span>
+  </a>
+  <a href="?status=completed" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition {% if selected_status == 'completed' %}bg-emerald-100 text-emerald-900 ring-1 ring-inset ring-emerald-200{% else %}bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50{% endif %}">
+    Completed
+    <span class="rounded-full bg-white/80 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">{{ counts.completed }}</span>
+  </a>
+  <span class="ml-auto text-xs text-slate-400">{{ counts.today }} started today</span>
+</div>
+
+<div class="card overflow-hidden">
+  {% if encounters %}
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th class="hidden sm:table-cell">Clinician</th>
+            <th>Date</th>
+            <th class="hidden md:table-cell">Impression</th>
+            <th class="hidden lg:table-cell">Follow-up</th>
+            <th>Status</th>
+            <th class="text-right">Record</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for encounter in encounters %}
+            <tr>
+              <td>
+                <div class="flex items-center gap-2">
+                  <a href="{% url 'patients:detail' encounter.patient.pk %}" class="font-medium text-slate-900 hover:text-brand-700">{{ encounter.patient.full_name }}</a>
+                  {% if encounter.patient.has_alert %}
+                    <span class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 ring-1 ring-inset ring-amber-200">Alert</span>
+                  {% endif %}
+                </div>
+                <p class="text-xs text-slate-400">{{ encounter.patient.mrn }}</p>
+              </td>
+              <td class="hidden text-sm text-slate-600 sm:table-cell">{{ encounter.clinician.display_name }}</td>
+              <td class="whitespace-nowrap">
+                <p class="text-sm text-slate-700">{{ encounter.encounter_date|date:"j M Y" }}</p>
+                <p class="text-xs text-slate-400">{{ encounter.encounter_date|time:"H:i" }}</p>
+              </td>
+              <td class="hidden max-w-xs md:table-cell">
+                <p class="truncate text-sm text-slate-600">{{ encounter.impression|default:encounter.chief_complaint|default:"Not recorded" }}</p>
+              </td>
+              <td class="hidden text-sm text-slate-600 lg:table-cell">{{ encounter.follow_up_date|date:"j M Y"|default:"—" }}</td>
+              <td>{% include "partials/_status_badge.html" with status=encounter.status label=encounter.get_status_display %}</td>
+              <td class="text-right">
+                <a href="{% url 'encounters:detail' encounter.pk %}" class="btn btn-ghost btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/_pagination.html" with page_obj=page_obj %}
+  {% else %}
+    <div class="p-6">
+      {% if selected_status %}
+        {% include "partials/_empty_state.html" with title="No encounters with this status" description="Try another filter to see the full clinical record." %}
+        <p class="mt-4 text-center"><a href="{% url 'encounters:list' %}" class="text-sm font-semibold text-brand-700 hover:text-brand-800">Show all encounters</a></p>
+      {% else %}
+        <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 px-6 py-12 text-center">
+          <h3 class="text-sm font-semibold text-slate-900">No encounters yet</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Open an encounter from an appointment, or start a walk-in encounter for a patient.</p>
+          {% if can_start_encounter %}<a href="{% url 'encounters:create' %}" class="btn btn-primary btn-sm mt-5">Start an encounter</a>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

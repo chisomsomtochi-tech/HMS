@@ -1,0 +1,12 @@
+<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 px-6 py-12 text-center">
+  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 ring-1 ring-inset ring-slate-200">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75A1.75 1.75 0 0 1 5.5 5h4.25v14H5.5a1.75 1.75 0 0 1-1.75-1.75V6.75Zm7.75-1.75h6.25a1.75 1.75 0 0 1 1.75 1.75v10.5A1.75 1.75 0 0 1 17.75 19H11.5V5Z" />
+    </svg>
+  </div>
+  <h3 class="mt-4 text-sm font-semibold text-slate-900">{{ title|default:"Nothing here yet" }}</h3>
+  <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">{{ description|default:"Records will appear here once they are added." }}</p>
+  {% if action_url %}
+    <a href="{{ action_url }}" class="btn btn-primary btn-sm mt-5">{{ action_label|default:"Get started" }}</a>
+  {% endif %}
+</div>

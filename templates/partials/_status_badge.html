@@ -1,0 +1,31 @@
+{% if status == "completed" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>{{ label|default:"Completed" }}
+  </span>
+{% elif status == "checked_in" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true"></span>{{ label|default:"Checked in" }}
+  </span>
+{% elif status == "in_progress" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-sky-500" aria-hidden="true"></span>{{ label|default:"In progress" }}
+  </span>
+{% elif status == "scheduled" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true"></span>{{ label|default:"Scheduled" }}
+  </span>
+{% elif status == "draft" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true"></span>{{ label|default:"Draft" }}
+  </span>
+{% elif status == "cancelled" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-slate-400" aria-hidden="true"></span>{{ label|default:"Cancelled" }}
+  </span>
+{% elif status == "no_show" %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200">
+    <span class="h-1.5 w-1.5 rounded-full bg-rose-500" aria-hidden="true"></span>{{ label|default:"No show" }}
+  </span>
+{% else %}
+  <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200">{{ label|default:status }}</span>
+{% endif %}

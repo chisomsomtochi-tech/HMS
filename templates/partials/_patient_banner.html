@@ -1,0 +1,48 @@
+<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+  <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex min-w-0 items-center gap-4">
+      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-lg font-semibold text-brand-800 ring-1 ring-inset ring-brand-100">
+        {{ patient.initials }}
+      </div>
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="truncate text-xl font-semibold tracking-tight text-slate-900">{{ patient.full_name }}</h2>
+          {% if not patient.is_active %}
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200">Inactive</span>
+          {% endif %}
+        </div>
+        <p class="mt-1 text-sm text-slate-500">
+          <span class="font-medium text-slate-700">{{ patient.mrn }}</span>
+          <span class="mx-1.5 text-slate-300">·</span>{{ patient.age_display }}
+          <span class="mx-1.5 text-slate-300">·</span>{{ patient.get_sex_display }}
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      {% if patient.phone %}
+        <a href="tel:{{ patient.phone }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900">
+          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+          </svg>
+          {{ patient.phone }}
+        </a>
+      {% endif %}
+      {% if patient.email %}
+        <a href="mailto:{{ patient.email }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900">
+          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+          </svg>
+          {{ patient.email }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  {% if patient.has_alert %}
+    <div class="flex items-start gap-3 border-t border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-900">
+      <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+      <p><span class="font-semibold">Clinical alert:</span> {{ patient.alert_note }}</p>
+    </div>
+  {% endif %}
+</div>

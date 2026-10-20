@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.display_name }} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Staff account{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <a href="{% url 'accounts:staff_list' %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+    </svg>
+    Back to staff accounts
+  </a>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-xl font-semibold text-brand-800 ring-1 ring-inset ring-brand-100">{{ member.initials }}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-2xl font-semibold tracking-tight text-slate-900">{{ member.display_name }}</h2>
+              {% if member.is_active %}
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">Active</span>
+              {% else %}
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200">Inactive</span>
+              {% endif %}
+              {% if member.must_change_password %}
+                <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">Temporary password</span>
+              {% endif %}
+            </div>
+            <p class="mt-1 text-sm text-slate-500">@{{ member.username }} · {{ member.role_label }}</p>
+          </div>
+        </div>
+
+        <dl class="mt-8 grid gap-5 border-t border-slate-100 pt-6 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Phone</dt>
+            <dd class="mt-1 text-sm text-slate-800">{{ member.phone|default:"Not recorded" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Email</dt>
+            <dd class="mt-1 text-sm text-slate-800">{{ member.email|default:"Not recorded" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Account created</dt>
+            <dd class="mt-1 text-sm text-slate-800">{{ member.date_joined|date:"j F Y" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Last sign-in</dt>
+            <dd class="mt-1 text-sm text-slate-800">{% if member.last_login %}{{ member.last_login|date:"j F Y, H:i" }}{% else %}Never{% endif %}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-sm font-semibold text-slate-900">Account actions</h3>
+      </div>
+      <div class="card-body flex flex-wrap gap-3">
+        <a href="{% url 'accounts:staff_edit' member.pk %}" class="btn btn-secondary">Edit details</a>
+        <a href="{% url 'accounts:staff_password' member.pk %}" class="btn btn-secondary">Reset password</a>
+        <form method="post" action="{% url 'accounts:staff_toggle' member.pk %}" onsubmit="return confirm('{% if member.is_active %}Deactivate{% else %}Reactivate{% endif %} this account?');">
+          {% csrf_token %}
+          <button type="submit" class="btn {% if member.is_active %}btn-danger{% else %}btn-primary{% endif %}" {% if member.pk == user.pk %}disabled title="You cannot change your own account status"{% endif %}>
+            {% if member.is_active %}Deactivate account{% else %}Reactivate account{% endif %}
+          </button>
+        </form>
+      </div>
+      {% if member.pk == user.pk %}
+        <div class="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">You cannot deactivate your own account.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-sm font-semibold text-slate-900">Access level</h3>
+      </div>
+      <div class="card-body space-y-4 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Role</span>
+          <span class="font-medium text-slate-900">{{ member.role_label }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Clinician</span>
+          <span class="font-medium text-slate-900">{% if member.is_clinician %}Yes{% else %}No{% endif %}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Django admin</span>
+          <span class="font-medium text-slate-900">{% if member.is_superuser %}Yes{% else %}No{% endif %}</span>
+        </div>
+        {% if member.must_change_password %}
+          <div class="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+            This account must change its password at the next sign-in.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base_print.html" %}
+
+{% block title %}Encounter summary · {{ patient.full_name }}{% endblock %}
+{% block back_url %}{% url 'encounters:detail' encounter.pk %}{% endblock %}
+
+{% block content %}
+<header class="flex flex-col gap-4 border-b-2 border-slate-900 pb-5 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-xl font-semibold tracking-tight text-slate-900">{{ CLINIC_NAME }}</p>
+    <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ CLINIC_TAGLINE }}</p>
+    <p class="mt-2 text-xs leading-5 text-slate-600">
+      {{ CLINIC_ADDRESS }}{% if CLINIC_ADDRESS %}<br>{% endif %}
+      {{ CLINIC_PHONE }}{% if CLINIC_PHONE %} · {% endif %}{{ CLINIC_EMAIL }}
+    </p>
+  </div>
+  <div class="sm:text-right">
+    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Clinical record</p>
+    <h1 class="mt-1 text-lg font-semibold text-slate-900">Eye Examination Summary</h1>
+    <p class="mt-1 text-xs text-slate-500">Encounter #{{ encounter.pk }}</p>
+    <p class="text-xs text-slate-500">Printed {% now "j F Y, H:i" %}</p>
+  </div>
+</header>
+
+<section class="mt-5 rounded-lg border border-slate-300 p-4 print-avoid-break">
+  <div class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Patient</p>
+      <p class="mt-0.5 font-semibold text-slate-900">{{ patient.full_name }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Medical record no.</p>
+      <p class="mt-0.5 font-medium text-slate-900">{{ patient.mrn }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Age / sex</p>
+      <p class="mt-0.5 text-slate-800">{{ patient.age_display }} · {{ patient.get_sex_display }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Date of birth</p>
+      <p class="mt-0.5 text-slate-800">{{ patient.date_of_birth|date:"j F Y"|default:"Not recorded" }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Visit date</p>
+      <p class="mt-0.5 text-slate-800">{{ encounter.encounter_date|date:"j F Y, H:i" }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Clinician</p>
+      <p class="mt-0.5 text-slate-800">{{ encounter.clinician.display_name }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Status</p>
+      <p class="mt-0.5 text-slate-800">{{ encounter.get_status_display }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Phone</p>
+      <p class="mt-0.5 text-slate-800">{{ patient.phone|default:"—" }}</p>
+    </div>
+  </div>
+  {% if patient.has_alert %}
+    <div class="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-800">
+      <span class="font-semibold uppercase tracking-wide">Clinical alert:</span> {{ patient.alert_note }}
+    </div>
+  {% endif %}
+</section>
+
+{% if encounter.has_triage %}
+  <section class="mt-5 print-avoid-break">
+    <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Presenting complaint &amp; history</h2>
+    <div class="mt-3 grid gap-4 sm:grid-cols-2">
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Chief complaint</p>
+        <p class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-800">{{ encounter.chief_complaint|default:"Not recorded" }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">History</p>
+        <p class="mt-1 whitespace-pre-line text-sm leading-6 text-slate-800">{{ encounter.history|default:"Not recorded" }}</p>
+      </div>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-800">
+      <span><span class="text-slate-500">BP:</span> {{ encounter.blood_pressure|default:"—" }}</span>
+      <span><span class="text-slate-500">Pulse:</span> {{ encounter.pulse|default:"—" }}{% if encounter.pulse %} bpm{% endif %}</span>
+      <span><span class="text-slate-500">Temp:</span> {{ encounter.temperature_c|default_if_none:"—" }}{% if encounter.temperature_c %} °C{% endif %}</span>
+      <span><span class="text-slate-500">Weight:</span> {{ encounter.weight_kg|default_if_none:"—" }}{% if encounter.weight_kg %} kg{% endif %}</span>
+      <span><span class="text-slate-500">Height:</span> {{ encounter.height_cm|default_if_none:"—" }}{% if encounter.height_cm %} cm{% endif %}</span>
+    </div>
+  </section>
+{% endif %}
+
+{% if eye_exam and eye_exam.has_data %}
+  <section class="mt-5 print-avoid-break">
+    <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Visual acuity</h2>
+    <table class="mt-3 w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-slate-300 text-left text-[10px] uppercase tracking-wide text-slate-500">
+          <th class="py-1.5 pr-4 font-semibold">Test</th>
+          <th class="py-1.5 pr-4 font-semibold">Right eye (OD)</th>
+          <th class="py-1.5 font-semibold">Left eye (OS)</th>
+        </tr>
+      </thead>
+      <tbody class="text-slate-800">
+        <tr class="border-b border-slate-200"><td class="py-1.5 pr-4 text-slate-500">Distance — unaided</td><td class="py-1.5 pr-4">{{ eye_exam.va_distance_od_unaided|default:"—" }}</td><td class="py-1.5">{{ eye_exam.va_distance_os_unaided|default:"—" }}</td></tr>
+        <tr class="border-b border-slate-200"><td class="py-1.5 pr-4 text-slate-500">Distance — corrected</td><td class="py-1.5 pr-4">{{ eye_exam.va_distance_od_corrected|default:"—" }}</td><td class="py-1.5">{{ eye_exam.va_distance_os_corrected|default:"—" }}</td></tr>
+        <tr class="border-b border-slate-200"><td class="py-1.5 pr-4 text-slate-500">Near vision</td><td class="py-1.5 pr-4">{{ eye_exam.va_near_od|default:"—" }}</td><td class="py-1.5">{{ eye_exam.va_near_os|default:"—" }}</td></tr>
+        <tr><td class="py-1.5 pr-4 text-slate-500">Pinhole</td><td class="py-1.5 pr-4">{{ eye_exam.pinhole_od|default:"—" }}</td><td class="py-1.5">{{ eye_exam.pinhole_os|default:"—" }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="mt-5 print-avoid-break">
+    <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Refraction</h2>
+    <table class="mt-3 w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-slate-300 text-left text-[10px] uppercase tracking-wide text-slate-500">
+          <th class="py-1.5 pr-4 font-semibold">Eye</th>
+          <th class="py-1.5 pr-4 font-semibold">Sphere</th>
+          <th class="py-1.5 pr-4 font-semibold">Cylinder</th>
+          <th class="py-1.5 pr-4 font-semibold">Axis</th>
+          <th class="py-1.5 font-semibold">Add</th>
+        </tr>
+      </thead>
+      <tbody class="text-slate-800">
+        <tr class="border-b border-slate-200"><td class="py-1.5 pr-4 text-slate-500">OD</td><td class="py-1.5 pr-4">{{ eye_exam.sph_od|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ eye_exam.cyl_od|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ eye_exam.axis_od|default_if_none:"—" }}</td><td class="py-1.5">{{ eye_exam.add_od|default_if_none:"—" }}</td></tr>
+        <tr><td class="py-1.5 pr-4 text-slate-500">OS</td><td class="py-1.5 pr-4">{{ eye_exam.sph_os|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ eye_exam.cyl_os|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ eye_exam.axis_os|default_if_none:"—" }}</td><td class="py-1.5">{{ eye_exam.add_os|default_if_none:"—" }}</td></tr>
+      </tbody>
+    </table>
+    <div class="mt-2 flex flex-wrap gap-x-8 gap-y-1 text-xs text-slate-600">
+      <span>PD: {{ eye_exam.pd|default_if_none:"—" }}{% if eye_exam.pd %} mm{% endif %}</span>
+      <span>IOP OD: {{ eye_exam.iop_od|default_if_none:"—" }}{% if eye_exam.iop_od %} mmHg{% endif %}</span>
+      <span>IOP OS: {{ eye_exam.iop_os|default_if_none:"—" }}{% if eye_exam.iop_os %} mmHg{% endif %}</span>
+      <span>Method: {{ eye_exam.get_iop_method_display|default:"—" }}</span>
+    </div>
+  </section>
+
+  <section class="mt-5 print-avoid-break">
+    <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Slit lamp &amp; fundus</h2>
+    <div class="mt-3 grid grid-cols-2 gap-6 text-sm">
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Anterior segment — OD</p>
+        <p class="mt-1 whitespace-pre-line leading-5 text-slate-800">{{ eye_exam.anterior_segment_od|default:"Not recorded" }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Anterior segment — OS</p>
+        <p class="mt-1 whitespace-pre-line leading-5 text-slate-800">{{ eye_exam.anterior_segment_os|default:"Not recorded" }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Fundus — OD</p>
+        <p class="mt-1 whitespace-pre-line leading-5 text-slate-800">{{ eye_exam.fundus_od|default:"Not recorded" }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Fundus — OS</p>
+        <p class="mt-1 whitespace-pre-line leading-5 text-slate-800">{{ eye_exam.fundus_os|default:"Not recorded" }}</p>
+      </div>
+    </div>
+    {% if eye_exam.exam_notes %}
+      <p class="mt-3 text-xs leading-5 text-slate-600"><span class="font-semibold text-slate-700">Notes:</span> {{ eye_exam.exam_notes }}</p>
+    {% endif %}
+  </section>
+{% endif %}
+
+<section class="mt-5 print-avoid-break">
+  <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Assessment &amp; plan</h2>
+  <div class="mt-3 space-y-3 text-sm">
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Impression</p>
+      <p class="mt-1 whitespace-pre-line leading-6 text-slate-800">{{ encounter.impression|default:"Not recorded" }}</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Plan</p>
+      <p class="mt-1 whitespace-pre-line leading-6 text-slate-800">{{ encounter.plan|default:"Not recorded" }}</p>
+    </div>
+    <p class="text-sm text-slate-800"><span class="text-slate-500">Follow-up:</span> {{ encounter.follow_up_date|date:"j F Y"|default:"Not scheduled" }}</p>
+  </div>
+</section>
+
+{% if prescription %}
+  <section class="mt-5 print-avoid-break">
+    <h2 class="border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Glasses prescription</h2>
+    <table class="mt-3 w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-slate-300 text-left text-[10px] uppercase tracking-wide text-slate-500">
+          <th class="py-1.5 pr-4 font-semibold">Eye</th>
+          <th class="py-1.5 pr-4 font-semibold">Sphere</th>
+          <th class="py-1.5 pr-4 font-semibold">Cylinder</th>
+          <th class="py-1.5 pr-4 font-semibold">Axis</th>
+          <th class="py-1.5 font-semibold">Add</th>
+        </tr>
+      </thead>
+      <tbody class="text-slate-800">
+        <tr class="border-b border-slate-200"><td class="py-1.5 pr-4 text-slate-500">OD</td><td class="py-1.5 pr-4">{{ prescription.sph_od|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ prescription.cyl_od|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ prescription.axis_od|default_if_none:"—" }}</td><td class="py-1.5">{{ prescription.add_od|default_if_none:"—" }}</td></tr>
+        <tr><td class="py-1.5 pr-4 text-slate-500">OS</td><td class="py-1.5 pr-4">{{ prescription.sph_os|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ prescription.cyl_os|default_if_none:"—" }}</td><td class="py-1.5 pr-4">{{ prescription.axis_os|default_if_none:"—" }}</td><td class="py-1.5">{{ prescription.add_os|default_if_none:"—" }}</td></tr>
+      </tbody>
+    </table>
+    <div class="mt-2 flex flex-wrap gap-x-8 gap-y-1 text-xs text-slate-600">
+      <span>PD: {{ prescription.pd|default_if_none:"—" }}{% if prescription.pd %} mm{% endif %}</span>
+      <span>Lens: {{ prescription.get_lens_type_display|default:"Not specified" }}</span>
+      <span>Issued by: {{ prescription.issued_by.display_name|default:"—" }}</span>
+    </div>
+    {% if prescription.notes %}<p class="mt-2 text-xs leading-5 text-slate-600">{{ prescription.notes }}</p>{% endif %}
+  </section>
+{% endif %}
+
+<section class="mt-10 grid grid-cols-2 gap-10 print-avoid-break">
+  <div>
+    <div class="border-t border-slate-400 pt-2 text-xs text-slate-600">
+      <p class="font-semibold text-slate-900">{{ encounter.clinician.display_name }}</p>
+      <p>{{ encounter.clinician.role_label }}</p>
+    </div>
+  </div>
+  <div>
+    <div class="border-t border-slate-400 pt-2 text-xs text-slate-600">
+      <p class="font-semibold text-slate-900">Signature &amp; date</p>
+      <p class="mt-4">________________________________</p>
+    </div>
+  </div>
+</section>
+
+<footer class="mt-8 border-t border-slate-200 pt-3 text-[10px] leading-4 text-slate-400">
+  <p>This record is confidential and intended for the named patient and authorized clinical staff. Generated by {{ CLINIC_NAME }} clinic management system.</p>
+</footer>
+{% endblock %}

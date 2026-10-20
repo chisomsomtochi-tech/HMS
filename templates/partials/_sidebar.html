@@ -1,0 +1,87 @@
+{% load cms %}
+<aside id="sidebar" data-sidebar class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-out lg:translate-x-0">
+  <div class="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
+    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white shadow-sm">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12s-3.5 6.75-9.75 6.75S2.25 12 2.25 12Z" />
+        <circle cx="12" cy="12" r="3.25" />
+      </svg>
+    </div>
+    <div class="min-w-0">
+      <p class="truncate text-sm font-semibold tracking-tight text-slate-900">{{ CLINIC_NAME }}</p>
+      <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Clinic management</p>
+    </div>
+  </div>
+
+  <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Main navigation">
+    <p class="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
+
+    <a href="{% url 'core:dashboard' %}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {% if request.resolver_match.app_name == 'core' %}bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+      <svg class="h-5 w-5 {% if request.resolver_match.app_name == 'core' %}text-brand-700{% else %}text-slate-400 group-hover:text-slate-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75A1.75 1.75 0 0 1 5.5 5h4.25v14H5.5a1.75 1.75 0 0 1-1.75-1.75V6.75Zm7.75-1.75h6.25a1.75 1.75 0 0 1 1.75 1.75v10.5A1.75 1.75 0 0 1 17.75 19H11.5V5Z" />
+      </svg>
+      Dashboard
+    </a>
+
+    {% if user|can:"view_patients" %}
+      <a href="{% url 'patients:list' %}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {% if request.resolver_match.app_name == 'patients' %}bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+        <svg class="h-5 w-5 {% if request.resolver_match.app_name == 'patients' %}text-brand-700{% else %}text-slate-400 group-hover:text-slate-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+        </svg>
+        Patients
+      </a>
+    {% endif %}
+
+    <a href="{% url 'appointments:list' %}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {% if request.resolver_match.app_name == 'appointments' %}bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+      <svg class="h-5 w-5 {% if request.resolver_match.app_name == 'appointments' %}text-brand-700{% else %}text-slate-400 group-hover:text-slate-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 5.25h13.5A1.5 1.5 0 0 1 20.25 6.75v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Zm3 7.5h1.5v1.5h-1.5v-1.5Zm4.5 0h1.5v1.5h-1.5v-1.5Zm-4.5 4.5h1.5V18h-1.5v-.75Zm4.5 0h1.5V18h-1.5v-.75Z" />
+      </svg>
+      Appointments
+    </a>
+
+    {% if user|can:"view_clinical" %}
+      <a href="{% url 'encounters:list' %}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {% if request.resolver_match.app_name == 'encounters' %}bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+        <svg class="h-5 w-5 {% if request.resolver_match.app_name == 'encounters' %}text-brand-700{% else %}text-slate-400 group-hover:text-slate-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4.5h3.75M7.5 3.75h9A1.5 1.5 0 0 1 18 5.25v15.5a1.5 1.5 0 0 1-1.5 1.5h-9a1.5 1.5 0 0 1-1.5-1.5V5.25a1.5 1.5 0 0 1 1.5-1.5Zm1.5 3h6" />
+        </svg>
+        Encounters
+      </a>
+    {% endif %}
+
+    {% if user|can:"manage_staff" %}
+      <p class="px-3 pb-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Administration</p>
+      <a href="{% url 'accounts:staff_list' %}" class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {% if request.resolver_match.url_name == 'staff_list' or request.resolver_match.url_name == 'staff_detail' or request.resolver_match.url_name == 'staff_create' or request.resolver_match.url_name == 'staff_edit' or request.resolver_match.url_name == 'staff_password' %}bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+        <svg class="h-5 w-5 {% if request.resolver_match.url_name == 'staff_list' %}text-brand-700{% else %}text-slate-400 group-hover:text-slate-500{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+        </svg>
+        Staff accounts
+      </a>
+    {% endif %}
+  </nav>
+
+  <div class="border-t border-slate-100 p-3">
+    <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
+        {{ user.initials }}
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-medium text-slate-900">{{ user.display_name }}</p>
+        <p class="truncate text-xs text-slate-500">{{ user.role_label }}</p>
+      </div>
+      <a href="{% url 'accounts:password_change' %}" class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white hover:text-slate-700" title="Change password" aria-label="Change password">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+        </svg>
+      </a>
+    </div>
+    <form method="post" action="{% url 'accounts:logout' %}" class="mt-1">
+      {% csrf_token %}
+      <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-7.5a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9m9 0-3-3m3 3-3 3" />
+        </svg>
+        Sign out
+      </button>
+    </form>
+  </div>
+</aside>

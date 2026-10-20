@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load cms %}
+
+{% block title %}Appointments · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Clinic schedule</h2>
+    <p class="mt-1 text-sm text-slate-500">Day view of booked visits, check-ins, and completed consultations.</p>
+  </div>
+  {% if can_manage_appointments %}
+    <a href="{% url 'appointments:create' %}" class="btn btn-primary">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New appointment
+    </a>
+  {% endif %}
+</div>
+
+<div class="card mb-6 overflow-hidden">
+  <div class="flex flex-col gap-4 p-4 sm:p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <a href="?{% querystring date=prev_date|date:'Y-m-d' %}" class="btn btn-secondary btn-sm" aria-label="Previous day">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 19.5-7.5-7.5 7.5-7.5" />
+          </svg>
+        </a>
+        <div class="px-2 text-center">
+          <p class="text-base font-semibold text-slate-900">{{ selected_date|date:"l, j F Y" }}</p>
+          {% if is_today %}<p class="text-[11px] font-semibold uppercase tracking-wide text-brand-700">Today</p>{% endif %}
+        </div>
+        <a href="?{% querystring date=next_date|date:'Y-m-d' %}" class="btn btn-secondary btn-sm" aria-label="Next day">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </a>
+        {% if not is_today %}
+          <a href="{% url 'appointments:list' %}" class="btn btn-ghost btn-sm">Today</a>
+        {% endif %}
+      </div>
+
+      <form method="get" class="flex flex-wrap items-center gap-2">
+        <label for="schedule-date" class="sr-only">Jump to date</label>
+        <input id="schedule-date" type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" data-auto-submit class="h-9 rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
+        <label for="filter-status" class="sr-only">Filter by status</label>
+        <select id="filter-status" name="status" data-auto-submit class="h-9 rounded-lg border border-slate-300 bg-white pl-2.5 pr-8 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
+          <option value="">All statuses</option>
+          {% for value, label in statuses %}
+            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <label for="filter-clinician" class="sr-only">Filter by clinician</label>
+        <select id="filter-clinician" name="clinician" data-auto-submit class="h-9 rounded-lg border border-slate-300 bg-white pl-2.5 pr-8 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
+          <option value="">All clinicians</option>
+          {% for clinician in clinicians %}
+            <option value="{{ clinician.pk }}" {% if selected_clinician == clinician.pk|stringformat:"s" %}selected{% endif %}>{{ clinician.display_name }}</option>
+          {% endfor %}
+        </select>
+        <noscript><button type="submit" class="btn btn-secondary btn-sm">Apply</button></noscript>
+      </form>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-4">
+      <div class="rounded-lg bg-slate-50 px-3 py-2.5">
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total</p>
+        <p class="text-lg font-semibold text-slate-900">{{ counts.total }}</p>
+      </div>
+      <div class="rounded-lg bg-blue-50/70 px-3 py-2.5">
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-blue-500">Scheduled</p>
+        <p class="text-lg font-semibold text-blue-900">{{ counts.scheduled }}</p>
+      </div>
+      <div class="rounded-lg bg-amber-50/70 px-3 py-2.5">
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600">In clinic</p>
+        <p class="text-lg font-semibold text-amber-900">{{ counts.in_clinic }}</p>
+      </div>
+      <div class="rounded-lg bg-emerald-50/70 px-3 py-2.5">
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">Completed</p>
+        <p class="text-lg font-semibold text-emerald-900">{{ counts.completed }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card overflow-hidden">
+  {% if appointments %}
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Patient</th>
+            <th class="hidden sm:table-cell">Clinician</th>
+            <th class="hidden md:table-cell">Type</th>
+            <th>Status</th>
+            <th class="text-right">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appointment in appointments %}
+            <tr>
+              <td class="whitespace-nowrap">
+                <p class="font-semibold text-slate-900">{{ appointment.scheduled_at|time:"H:i" }}</p>
+                <p class="text-xs text-slate-400">to {{ appointment.ends_at|time:"H:i" }}</p>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <a href="{% url 'patients:detail' appointment.patient.pk %}" class="font-medium text-slate-900 hover:text-brand-700">{{ appointment.patient.full_name }}</a>
+                  {% if appointment.patient.has_alert %}
+                    <span class="inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 ring-1 ring-inset ring-amber-200">Alert</span>
+                  {% endif %}
+                </div>
+                <p class="text-xs text-slate-400">{{ appointment.patient.mrn }} · {{ appointment.patient.age_display }}</p>
+              </td>
+              <td class="hidden sm:table-cell">
+                <p class="text-sm text-slate-700">{{ appointment.clinician.display_name }}</p>
+                <p class="text-xs text-slate-400">{{ appointment.duration_minutes }} min</p>
+              </td>
+              <td class="hidden text-sm text-slate-600 md:table-cell">{{ appointment.get_appointment_type_display }}</td>
+              <td>{% include "partials/_status_badge.html" with status=appointment.status label=appointment.get_status_display %}</td>
+              <td class="text-right">
+                <a href="{% url 'appointments:detail' appointment.pk %}" class="btn btn-ghost btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="p-6">
+      {% if selected_status or selected_clinician %}
+        {% include "partials/_empty_state.html" with title="No appointments match the filters" description="Clear the status or clinician filter to see the full day." %}
+        <p class="mt-4 text-center"><a href="?{% querystring status=None clinician=None %}" class="text-sm font-semibold text-brand-700 hover:text-brand-800">Clear filters</a></p>
+      {% else %}
+        {% url 'appointments:create' as book_url %}
+        {% include "partials/_empty_state.html" with title="No appointments on this day" description="The schedule is clear. Book a visit or move to another day." action_url=book_url action_label="Book appointment" %}
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Reschedule appointment{% else %}Book appointment{% endif %} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}{% if is_edit %}Reschedule appointment{% else %}Book appointment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-6">
+    <a href="{% if is_edit %}{% url 'appointments:detail' appointment.pk %}{% else %}{% url 'appointments:list' %}{% endif %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+      </svg>
+      {% if is_edit %}Back to appointment{% else %}Back to schedule{% endif %}
+    </a>
+    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+      {% if is_edit %}Reschedule {{ patient.full_name }}{% else %}Book a new appointment{% endif %}
+    </h2>
+    <p class="mt-1 text-sm text-slate-500">
+      {% if is_edit %}Change the time, clinician, or visit details. The appointment keeps its history.{% else %}Select a patient, then choose a clinician and time. Double bookings are rejected automatically.{% endif %}
+    </p>
+  </div>
+
+  {% if not patient %}
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Find the patient</h3>
+          <p class="mt-0.5 text-xs text-slate-500">Search by name, MRN, or phone number.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="relative">
+          <label for="patient-picker" class="sr-only">Search for a patient</label>
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+            </svg>
+          </div>
+          <input
+            id="patient-picker"
+            type="search"
+            name="q"
+            autocomplete="off"
+            autofocus
+            placeholder="Start typing a patient name or MRN…"
+            class="h-11 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+            hx-get="{% url 'patients:search' %}?mode=picker"
+            hx-trigger="input changed delay:250ms, search"
+            hx-target="#patient-picker-results"
+            hx-swap="innerHTML"
+          >
+        </div>
+        <div id="patient-picker-results" class="mt-3"></div>
+        <p class="mt-5 text-xs text-slate-500">
+          Patient not registered yet? <a href="{% url 'patients:create' %}" class="font-semibold text-brand-700 hover:text-brand-800">Register a new patient</a> first.
+        </p>
+      </div>
+    </div>
+  {% else %}
+    <div class="card mb-6">
+      <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex min-w-0 items-center gap-3">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-sm font-semibold text-brand-800 ring-1 ring-inset ring-brand-100">{{ patient.initials }}</div>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-semibold text-slate-900">{{ patient.full_name }}</p>
+            <p class="truncate text-xs text-slate-500">{{ patient.mrn }} · {{ patient.age_display }} · {{ patient.get_sex_display }}</p>
+          </div>
+        </div>
+        {% if not is_edit %}
+          <a href="{% url 'appointments:create' %}" class="text-sm font-semibold text-brand-700 hover:text-brand-800">Change patient</a>
+        {% endif %}
+      </div>
+      {% if patient.has_alert %}
+        <div class="flex items-start gap-2 border-t border-amber-100 bg-amber-50 px-5 py-2.5 text-xs text-amber-900">
+          <span class="font-semibold">Clinical alert:</span> {{ patient.alert_note }}
+        </div>
+      {% endif %}
+    </div>
+
+    <form method="post" class="card" novalidate>
+      {% csrf_token %}
+      {{ form.patient }}
+      <div class="card-body space-y-6">
+        {% if form.non_field_errors %}
+          <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        {% for error in form.patient.errors %}
+          <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">{{ error }}</div>
+        {% endfor %}
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          {% include "partials/_field.html" with field=form.clinician %}
+          {% include "partials/_field.html" with field=form.appointment_type %}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          {% include "partials/_field.html" with field=form.scheduled_at %}
+          {% include "partials/_field.html" with field=form.duration_minutes %}
+        </div>
+        {% include "partials/_field.html" with field=form.reason %}
+        {% include "partials/_field.html" with field=form.notes %}
+      </div>
+      <div class="card-footer flex items-center justify-between">
+        <a href="{% if is_edit %}{% url 'appointments:detail' appointment.pk %}{% else %}{% url 'patients:detail' patient.pk %}{% endif %}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          {% if is_edit %}Save changes{% else %}Book appointment{% endif %}
+        </button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

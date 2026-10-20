@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Triage · {{ patient.full_name }} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}Triage{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-5">
+    <a href="{% url 'encounters:detail' encounter.pk %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+      </svg>
+      Back to encounter
+    </a>
+  </div>
+
+  {% include "partials/_patient_banner.html" %}
+
+  <form method="post" class="mt-6 space-y-6" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Presenting complaint &amp; history</h3>
+          <p class="mt-0.5 text-xs text-slate-500">Capture the reason for the visit and relevant ocular or medical history.</p>
+        </div>
+      </div>
+      <div class="card-body space-y-5">
+        {% include "partials/_field.html" with field=form.chief_complaint %}
+        {% include "partials/_field.html" with field=form.history %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Vitals</h3>
+      </div>
+      <div class="card-body">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {% include "partials/_field.html" with field=form.blood_pressure %}
+          {% include "partials/_field.html" with field=form.pulse %}
+          {% include "partials/_field.html" with field=form.temperature_c %}
+          {% include "partials/_field.html" with field=form.weight_kg %}
+          {% include "partials/_field.html" with field=form.height_cm %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-base font-semibold text-slate-900">Triage notes</h3>
+      </div>
+      <div class="card-body">
+        {% include "partials/_field.html" with field=form.triage_notes %}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+      <a href="{% url 'encounters:detail' encounter.pk %}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary">Save triage</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <title>{% block title %}Sign in · {{ CLINIC_NAME }}{% endblock %}</title>
+  {% include "partials/_head.html" %}
+</head>
+<body class="min-h-full font-sans text-slate-900 antialiased">
+  {% block content %}{% endblock %}
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

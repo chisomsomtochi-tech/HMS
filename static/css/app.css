@@ -1,0 +1,242 @@
+/* Shared clinical UI components. Utility classes handle layout; these cover
+   repeated controls so templates stay readable. */
+
+html {
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #99f6e4;
+  color: #042f2e;
+}
+
+/* Buttons ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease,
+    color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-primary {
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+}
+
+.btn-primary:hover {
+  background: #115e59;
+}
+
+.btn-secondary {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #334155;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #475569;
+}
+
+.btn-ghost:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-danger {
+  background: #fff;
+  border-color: #fecdd3;
+  color: #e11d48;
+}
+
+.btn-danger:hover {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.45rem;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Cards -------------------------------------------------------------------- */
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.125rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-footer {
+  border-top: 1px solid #f1f5f9;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-radius: 0 0 1rem 1rem;
+}
+
+/* Tables ------------------------------------------------------------------- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table thead th {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.data-table tbody td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.data-table tbody th {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:last-child td,
+.data-table tbody tr:last-child th {
+  border-bottom: 0;
+}
+
+.data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.data-table .cell-input {
+  min-width: 7rem;
+}
+
+/* Section eyebrow ---------------------------------------------------------- */
+.section-title {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* HTMX --------------------------------------------------------------------- */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  opacity: 1;
+}
+
+[data-toast] {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+/* Print -------------------------------------------------------------------- */
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-page {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-break-before {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+}

@@ -1,0 +1,34 @@
+{% if patients %}
+  <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+    <div class="border-b border-slate-100 px-4 py-2.5">
+      <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ patients|length }} match{{ patients|length|pluralize:"es" }}</p>
+    </div>
+    <ul class="max-h-80 divide-y divide-slate-100 overflow-y-auto">
+      {% for patient in patients %}
+        <li>
+          {% if mode == "picker" %}
+            <a href="{% url 'appointments:create' %}?patient={{ patient.pk }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50">
+          {% elif mode == "encounter" %}
+            <a href="{% url 'encounters:create' %}?patient={{ patient.pk }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50">
+          {% else %}
+            <a href="{% url 'patients:detail' patient.pk %}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50">
+          {% endif %}
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-semibold text-brand-800 ring-1 ring-inset ring-brand-100">{{ patient.initials }}</div>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-slate-900">{{ patient.full_name }}</p>
+                <p class="truncate text-xs text-slate-500">{{ patient.mrn }} · {{ patient.age_display }} · {{ patient.get_sex_display }}</p>
+              </div>
+              {% if patient.has_alert %}
+                <span class="h-2 w-2 shrink-0 rounded-full bg-amber-500" title="Clinical alert" aria-label="Clinical alert"></span>
+              {% endif %}
+            </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% elif query %}
+  <div class="rounded-xl border border-slate-200 bg-white px-4 py-5 text-center shadow-lg">
+    <p class="text-sm font-medium text-slate-700">No patients match “{{ query }}”</p>
+    <p class="mt-1 text-xs text-slate-500">Check the spelling, MRN, or phone number.</p>
+  </div>
+{% endif %}

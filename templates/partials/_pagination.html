@@ -1,0 +1,22 @@
+{% load cms %}
+{% if page_obj.has_other_pages %}
+  <nav class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between" aria-label="Pagination">
+    <p class="text-xs text-slate-500">
+      Showing <span class="font-medium text-slate-700">{{ page_obj.start_index }}</span>–<span class="font-medium text-slate-700">{{ page_obj.end_index }}</span>
+      of <span class="font-medium text-slate-700">{{ page_obj.paginator.count }}</span>
+    </p>
+    <div class="flex items-center gap-2">
+      {% if page_obj.has_previous %}
+        <a href="?{% querystring page=page_obj.previous_page_number %}" class="btn btn-secondary btn-sm">Previous</a>
+      {% else %}
+        <span class="btn btn-secondary btn-sm cursor-not-allowed opacity-40">Previous</span>
+      {% endif %}
+      <span class="px-2 text-xs font-medium text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?{% querystring page=page_obj.next_page_number %}" class="btn btn-secondary btn-sm">Next</a>
+      {% else %}
+        <span class="btn btn-secondary btn-sm cursor-not-allowed opacity-40">Next</span>
+      {% endif %}
+    </div>
+  </nav>
+{% endif %}

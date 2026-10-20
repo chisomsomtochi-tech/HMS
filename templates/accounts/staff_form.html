@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_create %}New staff account{% else %}Edit {{ member.display_name }}{% endif %} · {{ CLINIC_NAME }}{% endblock %}
+{% block page_title %}{% if is_create %}New staff account{% else %}Edit staff account{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-6">
+    <a href="{% if is_create %}{% url 'accounts:staff_list' %}{% else %}{% url 'accounts:staff_detail' member.pk %}{% endif %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12l7.5-7.5M3 12h18" />
+      </svg>
+      Back to staff accounts
+    </a>
+    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+      {% if is_create %}Create a staff account{% else %}Edit {{ member.display_name }}{% endif %}
+    </h2>
+    <p class="mt-1 text-sm text-slate-500">
+      {% if is_create %}The new staff member will be asked to choose a new password at first sign-in.{% else %}Update the account details or change the staff member’s role.{% endif %}
+    </p>
+  </div>
+
+  <form method="post" class="card" novalidate>
+    {% csrf_token %}
+    <div class="card-body space-y-8">
+      {% if form.non_field_errors %}
+        <div class="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <section>
+        <h3 class="section-title">Identity</h3>
+        <div class="mt-4 grid gap-5 sm:grid-cols-2">
+          {% if is_create %}
+            {% include "partials/_field.html" with field=form.username %}
+          {% else %}
+            <div class="space-y-1.5">
+              <p class="block text-sm font-medium text-slate-700">Username</p>
+              <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">@{{ member.username }}</p>
+            </div>
+          {% endif %}
+          {% include "partials/_field.html" with field=form.first_name %}
+          {% include "partials/_field.html" with field=form.last_name %}
+        </div>
+      </section>
+
+      <section>
+        <h3 class="section-title">Contact</h3>
+        <div class="mt-4 grid gap-5 sm:grid-cols-2">
+          {% include "partials/_field.html" with field=form.phone %}
+          {% include "partials/_field.html" with field=form.email %}
+        </div>
+      </section>
+
+      <section>
+        <h3 class="section-title">Access</h3>
+        <div class="mt-4 max-w-sm">
+          {% include "partials/_field.html" with field=form.role %}
+        </div>
+        <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          <p class="font-medium text-slate-800">What each role can do</p>
+          <ul class="mt-2 space-y-1 text-sm">
+            <li><span class="font-medium text-slate-700">Receptionist</span> — register patients, book and manage appointments.</li>
+            <li><span class="font-medium text-slate-700">Nurse</span> — register patients, check patients in, and record triage.</li>
+            <li><span class="font-medium text-slate-700">Optometrist / Ophthalmologist</span> — full clinical exams, prescriptions, and encounter completion.</li>
+            <li><span class="font-medium text-slate-700">Administrator</span> — everything, including staff accounts.</li>
+          </ul>
+        </div>
+      </section>
+
+      {% if is_create %}
+        <section>
+          <h3 class="section-title">Temporary password</h3>
+          <div class="mt-4 grid gap-5 sm:grid-cols-2">
+            {% include "partials/_field.html" with field=form.password1 %}
+            {% include "partials/_field.html" with field=form.password2 %}
+          </div>
+        </section>
+      {% endif %}
+    </div>
+
+    <div class="card-footer flex items-center justify-between">
+      <a href="{% if is_create %}{% url 'accounts:staff_list' %}{% else %}{% url 'accounts:staff_detail' member.pk %}{% endif %}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        {% if is_create %}Create account{% else %}Save changes{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
