@@ -75,6 +75,98 @@ Open **http://127.0.0.1:8000/**.
 
 ---
 
+## Deploy with Docker
+
+The repository ships a production-style image: Python 3.12 slim, Gunicorn,
+WhiteNoise for static files, a non-root user, and a healthcheck. SQLite lives on
+a named volume so data survives rebuilds.
+
+### 1. Configure
+
+```bash
+cp .env.example .env   # skip if you already have a .env
+```
+
+Edit `.env` and set at least:
+
+- `DJANGO_SECRET_KEY` — a long random string
+- `DJANGO_ALLOWED_HOSTS` — the hostname(s) clients will use, e.g. `clinic.example.com,127.0.0.1`
+
+Keep `127.0.0.1` in `DJANGO_ALLOWED_HOSTS`: the container healthcheck requests
+`/healthz/` on that address.
+
+### 2. Build and start
+
+```bash
+docker compose up -d --build
+docker compose logs -f web
+```
+
+The entrypoint applies migrations, optionally seeds demo data, collects static
+files, then hands off to Gunicorn. Visit **http://localhost:8000/** (or the port
+set by `APP_PORT`).
+
+`DJANGO_DEBUG` is pinned to `False` in `docker-compose.yml`; debug pages are
+never served from the container.
+
+### 3. Create an account
+
+For a real deployment, create an administrator instead of seeding demo data:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+To populate the demo clinic (staff, patients, appointments, clinical records):
+
+```bash
+RUN_SEED_DEMO=True docker compose up -d
+```
+
+The demo accounts use `Demo@1234` — do not use them on a system holding real
+patient data.
+
+### Data, backups, and upgrades
+
+- The database is stored in the `cms_data` Docker volume. `docker compose down`
+  keeps it; `docker compose down -v` deletes it permanently.
+- Back up by pausing writes and copying the database out of the container:
+
+  ```bash
+  docker compose stop web
+  docker compose cp web:/app/data/db.sqlite3 ./db-backup.sqlite3
+  docker compose start web
+  ```
+
+- To upgrade after pulling code changes: `docker compose up -d --build`.
+  Migrations run automatically on start.
+
+### HTTPS and reverse proxies
+
+The compose defaults run over plain HTTP so a local trial works immediately.
+For a real domain, terminate TLS at a reverse proxy (Caddy, Nginx, Traefik) and
+set the following in `.env`:
+
+```dotenv
+DJANGO_SECURE_SSL_REDIRECT=True
+DJANGO_SECURE_COOKIES=True
+DJANGO_BEHIND_PROXY=True
+DJANGO_CSRF_TRUSTED_ORIGINS=https://clinic.example.com
+DJANGO_ALLOWED_HOSTS=clinic.example.com,127.0.0.1
+```
+
+With `DJANGO_SECURE_SSL_REDIRECT=True`, the healthcheck still works because
+`/healthz/` is exempt from the HTTPS redirect.
+
+> The image is designed for a single application instance sharing one SQLite
+> volume. If you need horizontal scaling or high availability, move to
+> PostgreSQL first; SQLite allows only one writer at a time.
+
+The Tailwind and HTMX CDNs are still used for the interface, so browsers need
+outbound internet access for styling and interactive behaviour.
+
+---
+
 ## Demo accounts
 
 All demo accounts use the password **`Demo@1234`**.

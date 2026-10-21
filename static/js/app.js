@@ -59,6 +59,24 @@
     }
   });
 
+  /* Password reveal toggles ---------------------------------------------- */
+  document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+    const input = document.getElementById(button.getAttribute("data-password-toggle"));
+    if (!input) return;
+
+    button.addEventListener("click", function () {
+      const reveal = input.type === "password";
+      input.type = reveal ? "text" : "password";
+      button.setAttribute("aria-pressed", reveal ? "true" : "false");
+      button.setAttribute("aria-label", reveal ? "Hide password" : "Show password");
+
+      const showIcon = button.querySelector('[data-icon="show"]');
+      const hideIcon = button.querySelector('[data-icon="hide"]');
+      if (showIcon) showIcon.classList.toggle("hidden", reveal);
+      if (hideIcon) hideIcon.classList.toggle("hidden", !reveal);
+    });
+  });
+
   /* Auto-submit filters --------------------------------------------------- */
   document.querySelectorAll("[data-auto-submit]").forEach(function (element) {
     element.addEventListener("change", function () {

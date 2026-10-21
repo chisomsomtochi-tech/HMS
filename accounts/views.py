@@ -9,6 +9,7 @@ from .forms import (
     StaffCreateForm,
     StaffEditForm,
     StaffPasswordResetForm,
+    StyledAuthenticationForm,
     StyledPasswordChangeForm,
 )
 from .models import Role, User
@@ -17,6 +18,7 @@ from .permissions import CapabilityRequiredMixin, capability_required
 
 class LoginView(auth_views.LoginView):
     template_name = "accounts/login.html"
+    authentication_form = StyledAuthenticationForm
     redirect_authenticated_user = True
 
     def form_valid(self, form):

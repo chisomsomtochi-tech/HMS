@@ -94,6 +94,70 @@ html {
   width: 100%;
 }
 
+/* Form controls ------------------------------------------------------------ */
+.input-icon {
+  position: relative;
+}
+
+.input-icon-glyph {
+  position: absolute;
+  left: 0.8125rem;
+  top: 50%;
+  width: 1.125rem;
+  height: 1.125rem;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color 150ms ease;
+}
+
+.input-icon:focus-within .input-icon-glyph {
+  color: #0f766e;
+}
+
+.input-icon input {
+  padding-left: 2.5rem;
+}
+
+.input-icon-trailing input {
+  padding-right: 2.75rem;
+}
+
+.input-reveal {
+  position: absolute;
+  right: 0.4375rem;
+  top: 50%;
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: #94a3b8;
+  transform: translateY(-50%);
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.input-reveal:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.input-reveal:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 1px;
+}
+
+/* Keep autofilled fields on the white input background instead of the
+   browser's pale yellow/blue wash. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 100px #fff inset;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+}
+
 /* Cards -------------------------------------------------------------------- */
 .card {
   background: #fff;

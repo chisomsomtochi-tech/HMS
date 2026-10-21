@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -8,6 +9,11 @@ from accounts.permissions import user_can
 from appointments.models import Appointment, Status as AppointmentStatus
 from encounters.models import Encounter
 from patients.models import Patient
+
+
+def healthz(request):
+    """Unauthenticated liveness probe for container orchestration."""
+    return HttpResponse("ok", content_type="text/plain")
 
 
 @login_required

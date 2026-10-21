@@ -1,0 +1,65 @@
+services:
+  web:
+    build:
+      context: .
+    image: suavedef-cms:latest
+    container_name: suavedef-cms
+    init: true
+    restart: unless-stopped
+
+    # .env is loaded as-is. Keep DJANGO_SECRET_KEY single-quoted there so
+    # Compose does not try to expand "$" characters inside the key.
+    env_file:
+      - .env
+
+    # DJANGO_DEBUG is pinned to False here so the image always runs in
+    # production mode.
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      # Plain HTTP by default for a local trial. Enable both when serving HTTPS.
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-False}
+      DJANGO_SECURE_COOKIES: ${DJANGO_SECURE_COOKIES:-False}
+      DJANGO_BEHIND_PROXY: ${DJANGO_BEHIND_PROXY:-False}
+
+      DJANGO_DB_PATH: /app/data/db.sqlite3
+      RUN_SEED_DEMO: ${RUN_SEED_DEMO:-False}
+
+      CLINIC_NAME: ${CLINIC_NAME:-Specialist Eye Care Centre}
+      CLINIC_TAGLINE: ${CLINIC_TAGLINE:-Comprehensive eye care}
+      CLINIC_ADDRESS: ${CLINIC_ADDRESS:-12 Vision Way, Lagos}
+      CLINIC_PHONE: ${CLINIC_PHONE:-+234 800 000 0000}
+      CLINIC_EMAIL: ${CLINIC_EMAIL:-hello@suavedef.example}
+      TIME_ZONE: ${TIME_ZONE:-Africa/Lagos}
+
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-60}
+
+    ports:
+      - "${APP_PORT:-8000}:8000"
+
+    volumes:
+      - cms_data:/app/data
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=4)"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    stop_grace_period: 30s
+
+volumes:
+  cms_data:

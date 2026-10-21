@@ -3,7 +3,10 @@ from django import forms
 INPUT_CLASS = (
     "block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm "
     "text-slate-900 placeholder:text-slate-400 shadow-sm transition "
-    "focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+    "hover:border-slate-400 "
+    "focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 "
+    "disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 "
+    "aria-[invalid=true]:border-rose-400 aria-[invalid=true]:focus:ring-rose-500/10"
 )
 SELECT_CLASS = INPUT_CLASS + " pr-9"
 TEXTAREA_CLASS = INPUT_CLASS + " min-h-24 resize-y"

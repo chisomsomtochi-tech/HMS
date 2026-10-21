@@ -1,9 +1,35 @@
 from django import forms
-from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
 
 from core.forms import TailwindFormMixin
 
 from .models import User
+
+
+class StyledAuthenticationForm(TailwindFormMixin, AuthenticationForm):
+    """Login form using the shared input styling, with login-specific hints."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update(
+            {
+                "placeholder": "e.g. dr.bello",
+                "autocomplete": "username",
+                "autocapitalize": "none",
+                "spellcheck": "false",
+            }
+        )
+        self.fields["password"].widget.attrs.update(
+            {
+                "placeholder": "Enter your password",
+                "autocomplete": "current-password",
+            }
+        )
 
 
 class StaffCreateForm(TailwindFormMixin, UserCreationForm):

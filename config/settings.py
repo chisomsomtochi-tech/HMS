@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -74,10 +75,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+# DJANGO_DB_PATH lets a container keep SQLite on a mounted volume (e.g. /app/data).
+# The timeout reduces "database is locked" errors with multiple Gunicorn workers.
+DB_PATH = os.getenv("DJANGO_DB_PATH")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": Path(DB_PATH) if DB_PATH else BASE_DIR / "db.sqlite3",
+        "OPTIONS": {"timeout": 20},
     }
 }
 
@@ -95,9 +100,16 @@ TIME_ZONE = os.getenv("TIME_ZONE", "Africa/Lagos")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise serves compressed static files from STATIC_ROOT in production,
+# so Gunicorn can serve the whole app without a separate web server.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -117,10 +129,20 @@ CLINIC_ADDRESS = os.getenv("CLINIC_ADDRESS", "12 Vision Way, Lagos")
 CLINIC_PHONE = os.getenv("CLINIC_PHONE", "+234 800 000 0000")
 CLINIC_EMAIL = os.getenv("CLINIC_EMAIL", "hello@suavedef.example")
 
+# Set DJANGO_BEHIND_PROXY=True when TLS terminates at a reverse proxy in front
+# of Gunicorn (the proxy must send X-Forwarded-Proto).
+if env_bool("DJANGO_BEHIND_PROXY", False):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# The container healthcheck is a plain-HTTP request and must not be redirected.
+SECURE_REDIRECT_EXEMPT = [r"^healthz/?$"]
+
 if not DEBUG:
+    # Defaults are secure; a plain-HTTP trial deployment must opt out explicitly.
     SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    SECURE_COOKIES = env_bool("DJANGO_SECURE_COOKIES", SECURE_SSL_REDIRECT)
+    SESSION_COOKIE_SECURE = SECURE_COOKIES
+    CSRF_COOKIE_SECURE = SECURE_COOKIES
+    SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = bool(SECURE_HSTS_SECONDS)
+    SECURE_HSTS_PRELOAD = bool(SECURE_HSTS_SECONDS)
