@@ -1,6 +1,8 @@
 """Django settings for the clinic management system."""
 import os
 from pathlib import Path
+import dj_database_url
+
 
 from dotenv import load_dotenv
 
@@ -77,14 +79,37 @@ ASGI_APPLICATION = "config.asgi.application"
 
 # DJANGO_DB_PATH lets a container keep SQLite on a mounted volume (e.g. /app/data).
 # The timeout reduces "database is locked" errors with multiple Gunicorn workers.
-DB_PATH = os.getenv("DJANGO_DB_PATH")
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(DB_PATH) if DB_PATH else BASE_DIR / "db.sqlite3",
-        "OPTIONS": {"timeout": 20},
+# DB_PATH = os.getenv("DJANGO_DB_PATH")
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": Path(DB_PATH) if DB_PATH else BASE_DIR / "db.sqlite3",
+#         "OPTIONS": {"timeout": 20},
+#     }
+# }
+
+
+
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+        )
     }
-}
+else:
+    DB_PATH = os.environ.get("DJANGO_DB_PATH")
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": Path(DB_PATH) if DB_PATH else BASE_DIR / "db.sqlite3",
+            "OPTIONS": {"timeout": 20},
+        }
+    }
 
 AUTH_USER_MODEL = "accounts.User"
 

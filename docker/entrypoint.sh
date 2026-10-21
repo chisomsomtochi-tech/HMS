@@ -16,6 +16,11 @@ mkdir -p "$(dirname "$DJANGO_DB_PATH")"
 echo "Applying database migrations..."
 python manage.py migrate --noinput
 
+if [ "${CREATE_SUPERUSER_ON_STARTUP:-False}" = "True" ]; then
+    echo "Checking initial admin account..."
+    python manage.py create_admin_from_env
+fi
+
 case "${RUN_SEED_DEMO:-False}" in
     1|true|True|TRUE)
         echo "Seeding demo clinic data..."
